@@ -1,0 +1,568 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Animações personalizadas */
+@keyframes userTransition {
+  0% {
+    transform: perspective(400px) rotateY(0deg);
+    opacity: 1;
+  }
+  20% {
+    transform: perspective(400px) rotateY(90deg);
+    opacity: 0.8;
+  }
+  40% {
+    transform: perspective(400px) rotateY(180deg);
+    opacity: 0.6;
+  }
+  60% {
+    transform: perspective(400px) rotateY(270deg);
+    opacity: 0.8;
+  }
+  80% {
+    transform: perspective(400px) rotateY(360deg);
+    opacity: 0.9;
+  }
+  100% {
+    transform: perspective(400px) rotateY(360deg);
+    opacity: 1;
+  }
+}
+
+.user-transition-container {
+  transform-style: preserve-3d;
+}
+
+/* Para quando o usuário muda nos stories, destacar visualmente */
+.new-user-indicator {
+  position: absolute;
+  bottom: -1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(255, 255, 255, 0.9);
+  color: #000;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: bold;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.5;
+  }
+}
+
+/* Base styles for mobile-first approach */
+:root {
+  --app-height: 100%;
+  --safe-area-inset-top: env(safe-area-inset-top, 0px);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-inset-left: env(safe-area-inset-left, 0px);
+  --safe-area-inset-right: env(safe-area-inset-right, 0px);
+  
+  /* Nova paleta de cores YaoPets */
+  --color-orange: #F5821D;
+  --color-purple: #CE97E8;
+  --color-turquoise: #0BDEC2;
+  --color-yellow: #EDD224;
+  
+  /* Variáveis de tema para o Tailwind */
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
+  
+  --primary: 28 91% 54%;          /* Laranja #F5821D */
+  --primary-foreground: 0 0% 100%;
+  
+  --secondary: 276 68% 75%;       /* Lilás #CE97E8 */
+  --secondary-foreground: 0 0% 0%;
+  
+  --accent: 169 90% 46%;          /* Turquesa #0BDEC2 */
+  --accent-foreground: 0 0% 0%;
+  
+  --muted: 210 40% 96.1%;
+  --muted-foreground: 215.4 16.3% 46.9%;
+  
+  --card: 0 0% 100%;
+  --card-foreground: 222.2 84% 4.9%;
+  
+  --popover: 0 0% 100%;
+  --popover-foreground: 222.2 84% 4.9%;
+  
+  --border: 214.3 31.8% 91.4%;
+  --input: 214.3 31.8% 91.4%;
+  
+  --ring: 28 91% 54%;             /* Laranja #F5821D */
+  
+  --radius: 0.5rem;
+  
+  /* Cores adicionais para gráficos ou UI específicos */
+  --chart-1: 28 91% 54%;          /* Laranja #F5821D */
+  --chart-2: 276 68% 75%;         /* Lilás #CE97E8 */
+  --chart-3: 169 90% 46%;         /* Turquesa #0BDEC2 */
+  --chart-4: 50 83% 54%;          /* Amarelo #EDD224 */
+  --chart-5: 0 0% 30%;            /* Cinza escuro para contraste */
+  
+  /* Configurações específicas para menu lateral */
+  --sidebar-background: 0 0% 100%;
+  --sidebar-foreground: 222.2 84% 4.9%;
+  --sidebar-primary: 28 91% 54%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 169 90% 46%;
+  --sidebar-accent-foreground: 0 0% 0%;
+  --sidebar-border: 214.3 31.8% 91.4%;
+  --sidebar-ring: 28 91% 54%;
+}
+
+html, body {
+  height: var(--app-height);
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  background-color: #fff;
+  margin: 0;
+  padding: 0;
+}
+
+body.native-app {
+  /* Padding para considerar a barra de status e a área segura inferior */
+  padding-top: var(--safe-area-inset-top);
+  padding-bottom: var(--safe-area-inset-bottom);
+}
+
+/* Fix for iOS height issues with browser chrome */
+@media not all and (min-resolution:.001dpcm) { 
+  @supports (-webkit-appearance:none) {
+    body {
+      min-height: -webkit-fill-available;
+    }
+  }
+}
+
+/* Mobile native styles */
+.app-container {
+  max-width: 100%;
+  margin: 0 auto;
+  background-color: white;
+  padding-top: var(--safe-area-inset-top);
+  padding-bottom: var(--safe-area-inset-bottom);
+  min-height: var(--app-height);
+}
+
+@media (min-width: 768px) {
+  .app-container {
+    max-width: 768px;
+    border-left: 1px solid #f1f1f1;
+    border-right: 1px solid #f1f1f1;
+  }
+}
+
+/* Estilos específicos para iOS */
+.ios-app .header {
+  padding-top: var(--safe-area-inset-top);
+}
+
+.ios-app .fixed-bottom {
+  padding-bottom: var(--safe-area-inset-bottom);
+  margin-bottom: 0;
+}
+
+/* Estilos específicos para Android */
+.android-app .status-bar-height {
+  height: var(--safe-area-inset-top);
+}
+
+/* Native-like bottom navigation */
+.native-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: white;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  height: 56px;
+  border-top: 1px solid #f1f1f1;
+  z-index: 50;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.native-bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  height: 100%;
+  position: relative;
+  color: #9ca3af;
+  font-size: 0.625rem;
+  transition: color 0.2s;
+}
+
+.native-bottom-nav-item.active {
+  color: #000;
+}
+
+/* Stories foram removidos */
+
+/* Stories removidos */
+
+/* Instagram-like post styling */
+.insta-post {
+  border-bottom: 1px solid #f1f1f1;
+  margin-bottom: 8px;
+}
+
+.insta-post-header {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  gap: 10px;
+}
+
+.insta-post-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.insta-post-username {
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.insta-post-image {
+  width: 100%;
+  aspect-ratio: 1/1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.insta-post-actions {
+  display: flex;
+  padding: 8px 12px;
+}
+
+.insta-post-action {
+  margin-right: 16px;
+}
+
+.insta-post-bookmark {
+  margin-left: auto;
+}
+
+.insta-post-likes {
+  padding: 0 12px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  margin-bottom: 4px;
+}
+
+.insta-post-caption {
+  padding: 0 12px;
+  font-size: 0.875rem;
+  margin-bottom: 8px;
+}
+
+/* Native-like action feedback */
+@keyframes heartPulse {
+  0% { transform: scale(1); }
+  15% { transform: scale(1.25); }
+  30% { transform: scale(1); }
+}
+
+.heart-active {
+  color: #ed4956;
+  animation: heartPulse 0.3s ease;
+}
+
+.bookmark-active {
+  color: #000;
+}
+
+/* Native pull-to-refresh effect */
+.refresh-indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateY(-100%);
+  transition: transform 0.3s ease;
+}
+
+.refresh-indicator.visible {
+  transform: translateY(0);
+}
+
+/* Ocultar barras de rolagem em todo o aplicativo */
+::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: transparent;
+}
+
+/* Para Firefox */
+* {
+  scrollbar-width: none;
+}
+
+/* Para IE */
+* {
+  -ms-overflow-style: none;
+}
+
+:root {
+  --background: 0 0% 100%;
+  --foreground: 0 0% 15%;
+  --muted: 0 0% 96%;
+  --muted-foreground: 0 0% 45%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 15%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 15%;
+  --border: 0 0% 92%;
+  --input: 0 0% 92%;
+  
+  /* YaoPets Colors */
+  --primary: 24 100% 49%;        /* Laranja #fa6400 */
+  --primary-foreground: 0 0% 100%;
+  --secondary: 276 56% 37%;      /* Roxo principal #6e2a91 */
+  --secondary-foreground: 0 0% 100%;
+  --dark-purple: 276 43% 31%;    /* Roxo escuro blocos #3f1963 */
+  --purple-light: 276 41% 59%;   /* Roxo suave bordas #a56ac2 */
+  --purple-bg: 276 57% 94%;      /* Roxo bem claro fundo #ede5f6 */
+  --highlight: 42 90% 57%;       /* Amarelo #f4bd2e */
+  --highlight-foreground: 0 0% 15%;
+  
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 60 9% 98%;
+  --ring: 28 100% 55%;           /* Laranja #fa6400 */
+  --radius: 0.25rem;
+
+  /* Custom colors for specific purposes */
+  --warning: 48 89% 57%;         /* Amarelo #f4bd2e */
+  --warning-foreground: 0 0% 15%;
+  --success: 169 91% 46%;        /* Turquesa #0BDEC2 */
+  --success-foreground: 0 0% 15%;
+  --danger: 0 84% 60%;
+  --danger-foreground: 0 0% 100%;
+  
+  /* Story gradient colors */
+  --story-inactive: 0 0% 85%;
+  --story-active-1: 276 56% 64%;  /* Roxo #6e2a91 */
+  --story-active-2: 28 100% 55%;  /* Laranja #fa6400 */
+
+  /* Chart colors */
+  --chart-1: 28 100% 55%;         /* Laranja #fa6400 */
+  --chart-2: 276 56% 64%;         /* Roxo #6e2a91 */
+  --chart-3: 169 91% 46%;         /* Turquesa #0BDEC2 */
+  --chart-4: 48 89% 57%;          /* Amarelo #f4bd2e */
+  --chart-5: 240 3% 30%;          /* Cinza escuro para contraste */
+}
+
+.dark {
+  --background: 276 43% 20%;     /* Fundo escuro roxo com tom de #3f1963 */
+  --foreground: 0 0% 98%;
+  --muted: 276 43% 15%;
+  --muted-foreground: 240 5% 65%;
+  --popover: 276 43% 22%;
+  --popover-foreground: 0 0% 98%;
+  --card: 276 43% 22%;
+  --card-foreground: 0 0% 98%;
+  --border: 276 41% 40%;
+  --input: 276 41% 40%;
+  
+  /* YaoPets Colors - Tema Escuro */
+  --primary: 24 100% 49%;        /* Laranja #fa6400 */
+  --primary-foreground: 0 0% 100%;
+  --secondary: 276 56% 37%;      /* Roxo #6e2a91 */
+  --secondary-foreground: 0 0% 100%;
+  --dark-purple: 276 43% 31%;    /* Roxo escuro #3f1963 */
+  --purple-light: 276 41% 59%;   /* Roxo suave #a56ac2 */
+  --purple-bg: 276 43% 25%;      /* Versão escura do #ede5f6 */
+  --highlight: 42 90% 57%;       /* Amarelo #f4bd2e */
+  --highlight-foreground: 0 0% 15%;
+  
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 98%;
+  --ring: 24 100% 49%;           /* Laranja #fa6400 */
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-white text-foreground;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-medium tracking-tight;
+  }
+  
+  p {
+    @apply leading-relaxed;
+  }
+}
+
+.app-container {
+  @apply max-w-lg mx-auto bg-white min-h-screen relative pb-16;
+}
+
+/* Instagram-style cards without shadows */
+.card-shadow {
+  box-shadow: none;
+}
+
+/* Ocultar barras de rolagem em todos os elementos */
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;  /* IE and Edge */
+}
+
+*::-webkit-scrollbar {
+  display: none; /* Chrome, Safari e Opera */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Instagram-style post cards */
+.insta-post {
+  @apply mb-6 border-b border-neutral-100;
+}
+
+.insta-post-image {
+  @apply w-full h-auto aspect-square object-cover;
+}
+
+.insta-post-header {
+  @apply flex items-center p-3 gap-2;
+}
+
+.insta-post-avatar {
+  @apply w-8 h-8 rounded-full overflow-hidden;
+}
+
+.insta-post-username {
+  @apply text-sm font-medium;
+}
+
+.insta-post-actions {
+  @apply flex items-center px-3 py-2 gap-5;
+}
+
+.insta-post-action {
+  @apply text-2xl;
+}
+
+.insta-post-bookmark {
+  @apply ml-auto text-2xl;
+}
+
+.insta-post-likes {
+  @apply px-3 py-1 text-sm font-medium;
+}
+
+.insta-post-caption {
+  @apply px-3 pb-3 text-sm;
+}
+
+/* Instagram-style stories - removidos */
+
+/* Status Pills - more subtle and modern */
+.status-pill {
+  @apply text-xs font-medium px-2 py-0.5 rounded-full;
+}
+
+.status-pill-lost {
+  @apply bg-destructive/10 text-destructive;
+}
+
+.status-pill-found {
+  @apply bg-amber-100 text-amber-800;
+}
+
+.status-pill-adoption {
+  @apply bg-secondary/10 text-secondary;
+}
+
+.status-pill-donation {
+  @apply bg-green-100 text-green-700;
+}
+
+.status-pill-vet-help {
+  @apply bg-blue-100 text-blue-700;
+}
+
+/* Tab styles */
+.tab-active {
+  @apply text-primary;
+}
+
+/* Bottom navigation */
+.bottom-nav-button {
+  @apply flex flex-col items-center pt-2 pb-1 flex-1 text-neutral-600;
+}
+
+.bottom-nav-button.active {
+  @apply tab-active;
+}
+
+/* Animação para modal de comentários estilo Instagram */
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0.8;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s ease-out forwards;
+}
+.comments-scrollable::-webkit-scrollbar {
+  width: 8px;
+}
+.comments-scrollable::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+.comments-scrollable::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+.comments-scrollable::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
