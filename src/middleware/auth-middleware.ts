@@ -36,18 +36,17 @@ export function useAuthMiddleware() {
       return;
     }
 
-    // If the user is authenticated and not on an auth page
+    // If the user is authenticated and not on an auth page or root
     if (isAuthenticated && user) {
-      const authPages = ["/auth/login", "/auth/register"];
+      const authPages = ["/", "/auth/login", "/auth/register"];
       if (authPages.includes(location)) {
-        console.log("[Middleware] Authenticated user trying to access auth page, redirecting");
+        console.log("[Middleware] Authenticated user trying to access public or auth page, redirecting");
         setLocation("/home"); // Use setLocation to avoid page refresh
         return;
       }
     }
 
     // Ensure protected pages are not accessed by unauthenticated users
-    // Profile pages are public, so are not included in protected pages
     if (!isAuthenticated && !user) {
       const protectedPages = [
         "/pets",
