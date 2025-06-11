@@ -3,7 +3,7 @@ import axios from "axios";
 
 // Create axios instance
 const axiosInstance = axios.create({
-  baseURL: 'http://localhost:5000/api',
+  baseURL: 'http://yaopets.lat/api',
   headers: {
     'Content-Type': 'application/json',
   },
