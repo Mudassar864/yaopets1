@@ -44,7 +44,7 @@ export default function Header({
               size="icon"
               className="text-black hover:text-black/80"
             >
-              <Store size={48} />
+              <Store size={48} className="!w-6 !h-6" />
             </Button>
           </Link>
           <Link href="/chat">
@@ -53,7 +53,7 @@ export default function Header({
               size="icon"
               className="text-black hover:text-black/80"
             >
-              <MessageCircle size={48} />
+              <MessageCircle size={48} className="!w-6 !h-6" />
             </Button>
           </Link>
           <Link href="/profile">
