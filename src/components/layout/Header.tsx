@@ -12,11 +12,11 @@ type HeaderProps = {
   onBack?: () => void;
 };
 
-export default function Header({ 
-  title = "YaoPets", 
-  showFilters = true, 
+export default function Header({
+  title = "YaoPets",
+  showFilters = true,
   showBack = false,
-  onBack
+  onBack,
 }: HeaderProps) {
   const { user } = useAuth();
 
@@ -25,10 +25,10 @@ export default function Header({
       <div className="px-4 py-3 flex items-center justify-between">
         <div className="flex items-center">
           {showBack ? (
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={onBack} 
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onBack}
               className="mr-2 text-black"
             >
               <span className="material-icons">arrow_back</span>
@@ -36,25 +36,33 @@ export default function Header({
           ) : null}
           <h1 className="text-xl font-bold text-black">{title}</h1>
         </div>
-        
+
         <div className="flex items-center space-x-4">
           <Link href="/store">
-            <Button variant="ghost" size="icon" className="text-black hover:text-black/80">
-              <Store size={32} />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-black hover:text-black/80"
+            >
+              <Store size={48} />
             </Button>
           </Link>
           <Link href="/chat">
-            <Button variant="ghost" size="icon" className="text-black hover:text-black/80">
-              <MessageCircle size={32} />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-black hover:text-black/80"
+            >
+              <MessageCircle size={48} />
             </Button>
           </Link>
           <Link href="/profile">
             <Avatar className="h-9 w-9 border border-gray-300">
               {user?.profileImage ? (
-                <AvatarImage 
-                  src={user.profileImage} 
-                  alt={user.name} 
-                  className="h-full w-full object-cover" 
+                <AvatarImage
+                  src={user.profileImage}
+                  alt={user.name}
+                  className="h-full w-full object-cover"
                 />
               ) : (
                 <AvatarFallback className="bg-gray-100 text-gray-800">
