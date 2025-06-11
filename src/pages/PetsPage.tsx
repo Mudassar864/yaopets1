@@ -322,12 +322,7 @@ export default function PetsPage() {
                     <p className="text-gray-600 mb-4">
                       There are no pets available for adoption at the moment. Use the "Register pet" button to add a pet for adoption.
                     </p>
-                    <Button 
-                      className="bg-green-500 hover:bg-green-600"
-                      onClick={() => setReportDialogOpen(true)}
-                    >
-                      Register pet for adoption
-                    </Button>
+                    
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
