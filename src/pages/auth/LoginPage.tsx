@@ -91,7 +91,7 @@ export default function LoginPage() {
 
   // Social login: redirect to backend OAuth route
   const handleSocialLogin = (provider: "google" | "facebook" | "linkedin") => {
-    const baseUrl = import.meta.env.VITE_API_URL || "http://lyaopets.lat";
+    const baseUrl = import.meta.env.VITE_API_URL || "http://yaopets.lat";
     window.location.href = `${baseUrl}/api/auth/${provider}`;
   };
 
