@@ -1,8 +1,11 @@
 import axios from "axios";
 
+// Get base URL from Vite environment variable
+const baseURL = import.meta.env.VITE_API_URL || "https://yaopets.lat/api";
+
 // Create axios instance with base URL
 const api = axios.create({
-  baseURL: "https://yaopets.lat/api",
+  baseURL,
   headers: {
     "Content-Type": "application/json",
   },
@@ -24,9 +27,7 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Handle 401 Unauthorized errors
     if (error.response && error.response.status === 401) {
-      // Clear token and redirect to login
       localStorage.removeItem("token");
       window.location.href = "/auth/login";
     }

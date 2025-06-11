@@ -7,18 +7,26 @@ import { generateInitials } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/AuthContext";
 import { ArrowLeft, MoreVertical, Send, Paperclip } from "lucide-react";
-import { chatStorage, userManagement } from "@/utils/localStorageManager";
+import api from "@/lib/api";
 
 // Message data types
 interface MessageType {
-  id: number;
+  id: number | string;
   content: string;
   createdAt: string;
-  senderId: number;
-  recipientId: number;
-  conversationId: number;
+  senderId: number | string;
+  recipientId: number | string;
+  conversationId: number | string;
   attachmentUrl?: string;
   read?: boolean;
+}
+
+interface UserType {
+  id: number | string;
+  name?: string;
+  city?: string;
+  profileImage?: string;
+  [key: string]: any;
 }
 
 export default function ChatPage() {
@@ -29,50 +37,66 @@ export default function ChatPage() {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<MessageType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [recipientData, setRecipientData] = useState<any>(null);
+  const [recipientData, setRecipientData] = useState<UserType | null>(null);
+  const [conversationId, setConversationId] = useState<number | string | null>(null);
   const messageContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Get or create conversation
+  // Get or create conversation from API
   useEffect(() => {
     if (!user || !id) return;
-    
-    const targetUserId = parseInt(id);
-    if (isNaN(targetUserId)) {
-      toast({
-        title: "Invalid user",
-        description: "Could not find the specified user",
-        variant: "destructive"
-      });
-      setLocation("/chat");
-      return;
-    }
-    
-    // Get recipient data
-    const recipient = userManagement.getUserById(targetUserId);
-    if (!recipient) {
-      toast({
-        title: "User not found",
-        description: "The user you're trying to chat with doesn't exist",
-        variant: "destructive"
-      });
-      setLocation("/chat");
-      return;
-    }
-    
-    setRecipientData(recipient);
-    
-    // Get or create conversation
-    const conversation = chatStorage.createChat(user.id, targetUserId);
-    
-    // Load messages
-    const chatMessages = chatStorage.getMessages(conversation.id);
-    setMessages(chatMessages);
-    
-    // Mark messages as read
-    chatStorage.markMessagesAsRead(conversation.id, user.id);
-    
-    setIsLoading(false);
+
+    const fetchChatData = async () => {
+      setIsLoading(true);
+      try {
+        // Fetch recipient data from API
+        const recipientRes = await api.user.getProfile(id);
+        if (!recipientRes?.data) {
+          toast({
+            title: "User not found",
+            description: "The user you're trying to chat with doesn't exist",
+            variant: "destructive"
+          });
+          setLocation("/chat");
+          return;
+        }
+        setRecipientData(recipientRes.data);
+
+        // Get or create chat conversation from API
+        const chatRes = await api.chat.getOrCreateChat(id);
+        const convId = chatRes?.data?.id || chatRes?.data?.chatId;
+        if (!convId) {
+          toast({
+            title: "Chat error",
+            description: "Could not start or find conversation",
+            variant: "destructive"
+          });
+          setLocation("/chat");
+          return;
+        }
+        setConversationId(convId);
+
+        // Fetch messages for this conversation
+        let msgRes;
+        try {
+          msgRes = await api.chat.getMessages(convId);
+          setMessages(Array.isArray(msgRes.data) ? msgRes.data : msgRes.data?.messages || []);
+        } catch {
+          setMessages([]);
+        }
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to load chat",
+          variant: "destructive"
+        });
+        setLocation("/chat");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchChatData();
   }, [id, user, setLocation, toast]);
 
   // Scroll to latest message
@@ -132,28 +156,36 @@ export default function ChatPage() {
     }
   };
 
-  // Handle sending a message
-  const handleSendMessage = () => {
-    if (!message.trim() || !user || !recipientData) return;
-    
-    // Get conversation ID
-    const conversation = chatStorage.createChat(user.id, recipientData.id);
-    
-    // Send message
-    const newMessage = chatStorage.sendMessage(
-      conversation.id,
-      user.id,
-      recipientData.id,
-      message.trim()
-    );
-    
-    // Update UI
-    setMessages(prev => [...prev, newMessage]);
-    setMessage("");
-    
-    // Focus input
-    if (inputRef.current) {
-      inputRef.current.focus();
+  // Handle sending a message using API
+  const handleSendMessage = async () => {
+    if (!message.trim() || !user || !recipientData || !conversationId) return;
+
+    try {
+      // Send message via API
+      const sendRes = await api.chat.sendMessage(conversationId, {
+        content: message.trim(),
+        recipientId: recipientData.id,
+      });
+      const newMsg: MessageType =
+        sendRes.data?.message ||
+        sendRes.data ||
+        {
+          id: Date.now(),
+          content: message.trim(),
+          createdAt: new Date().toISOString(),
+          senderId: user.id,
+          recipientId: recipientData.id,
+          conversationId,
+        };
+      setMessages((prev) => [...prev, newMsg]);
+      setMessage("");
+      if (inputRef.current) inputRef.current.focus();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to send message",
+        variant: "destructive",
+      });
     }
   };
 
@@ -221,7 +253,7 @@ export default function ChatPage() {
               );
             } else {
               const message = item.value;
-              const isCurrentUser = user && message.senderId === user.id;
+              const isCurrentUser = user && message.senderId == user.id;
 
               return (
                 <div

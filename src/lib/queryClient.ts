@@ -1,9 +1,10 @@
 import { QueryClient } from "@tanstack/react-query";
 import axios from "axios";
+const baseURL = import.meta.env.VITE_API_URL || "https://yaopets.lat/api";
 
 // Create axios instance
 const axiosInstance = axios.create({
-  baseURL: 'https://yaopets.lat/api',
+  baseURL,
   headers: {
     'Content-Type': 'application/json',
   },

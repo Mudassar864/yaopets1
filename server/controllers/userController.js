@@ -9,6 +9,7 @@ import { v2 as cloudinary } from 'cloudinary';
 export const getUserProfile = async (req, res) => {
   try {
     const { id } = req.params;
+    console.log('Get user profile request:', req.params);
     
     // Validate ID
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -220,6 +221,8 @@ export const getUserPets = async (req, res) => {
 // Get user saved posts
 export const getUserSavedPosts = async (req, res) => {
   try {
+  console.log('Get user saved posts request:', req.query);
+
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;

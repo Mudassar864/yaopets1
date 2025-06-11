@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { MapPin, Heart, ArrowLeft, Map } from "lucide-react";
 import NativeBottomNavigation from "@/components/mobile/NativeBottomNavigation";
 import api from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 
 // Pet interface
 interface Pet {
@@ -21,6 +22,7 @@ interface Pet {
   color?: string;
   eyeColor?: string;
   ownerName?: string;
+  ownerId?: string;
   photos?: string[];
   imageUrl?: string;
 }
@@ -30,6 +32,7 @@ export default function PetDetailsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [, navigate] = useLocation();
   const [match, params] = useRoute<{ id: string }>("/pet-details/:id");
+  const { user } = useAuth();
 
   // Fetch pet data by ID from backend API
   useEffect(() => {
@@ -64,6 +67,7 @@ export default function PetDetailsPage() {
           color: data.color,
           eyeColor: data.eyeColor,
           ownerName: data.user?.name || data.ownerName,
+          ownerId: data.user?._id || data.ownerId, // <-- Important for chat
           photos: data.photos,
           imageUrl: data.photos?.[0] || data.imageUrl,
         };
@@ -92,17 +96,25 @@ export default function PetDetailsPage() {
   };
 
   // For "lost" and "found", show "Check location"; for "adoption", show "I want to adopt"
-  const handleMainAction = () => {
+  const handleMainAction = async () => {
     if (!pet) return;
     if (pet.status === "Available") {
-      // Adoption action
-      const message = `I want this lovely pet! 🐾
-Name: ${pet.name}
-Description: ${pet.description}
-Location: ${pet.address}`;
-      alert("Message sent to owner's inbox:\n\n" + message);
-      // To use WhatsApp: window.open(`https://wa.me/${pet.contactPhone}?text=${encodeURIComponent(message)}`, '_blank');
-      // Or navigate(`/chat/${pet.id}`);
+      // Adoption action: start chat with pet's owner
+      if (!pet.ownerId) {
+        alert("Could not start chat. Owner not found.");
+        return;
+      }
+      // Do NOT redirect if the viewer is the owner themselves
+      if (user && (pet.ownerId === user.id || pet.ownerId === user._id)) {
+        alert("You are the owner of this pet.");
+        return;
+      }
+      try {
+        // Optionally: await api.chat.getOrCreateChat(pet.ownerId);
+        navigate(`/chat/${pet.ownerId}`);
+      } catch (err) {
+        alert("Could not start chat with the owner.");
+      }
     } else {
       // Lost or Found: Show location in Google Maps
       const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(pet.address)}`;
@@ -113,6 +125,14 @@ Location: ${pet.address}`;
   const getActionButton = () => {
     if (!pet) return null;
     if (pet.status === "Available") {
+      // Hide the button if the viewer is the owner
+      if (user && (pet.ownerId === user.id || pet.ownerId === user._id)) {
+        return (
+          <div className="text-center text-green-700 font-medium mb-6">
+            You are the owner of this pet.
+          </div>
+        );
+      }
       return (
         <Button
           className="w-full bg-pink-500 hover:bg-pink-600 text-white py-6 rounded-md mb-6 h-12"
@@ -200,7 +220,8 @@ Location: ${pet.address}`;
             <span className="text-sm">{pet.address}</span>
           </div>
           {getActionButton()}
-          <div className="grid grid-cols-3 gap-2 mb-6">
+          {/* Main details grid */}
+          <div className="grid grid-cols-3 gap-2 mb-4">
             <div className="bg-gray-50 p-3 rounded-lg text-center">
               <span className="block text-sm font-medium text-gray-600">Species</span>
               <span className="block text-base font-semibold text-gray-800">{pet.species}</span>
@@ -212,6 +233,32 @@ Location: ${pet.address}`;
             <div className="bg-gray-50 p-3 rounded-lg text-center">
               <span className="block text-sm font-medium text-gray-600">Age</span>
               <span className="block text-base font-semibold text-gray-800">{pet.age}</span>
+            </div>
+          </div>
+          {/* Extended details grid - same design */}
+          <div className="grid grid-cols-3 gap-2 mb-4">
+            <div className="bg-gray-50 p-3 rounded-lg text-center">
+              <span className="block text-sm font-medium text-gray-600">Breed</span>
+              <span className="block text-base font-semibold text-gray-800">{pet.breed ?? "Not informed"}</span>
+            </div>
+            <div className="bg-gray-50 p-3 rounded-lg text-center">
+              <span className="block text-sm font-medium text-gray-600">Color</span>
+              <span className="block text-base font-semibold text-gray-800">{pet.color ?? "Not informed"}</span>
+            </div>
+            <div className="bg-gray-50 p-3 rounded-lg text-center">
+              <span className="block text-sm font-medium text-gray-600">Eye Color</span>
+              <span className="block text-base font-semibold text-gray-800">{pet.eyeColor ?? "Not informed"}</span>
+            </div>
+          </div>
+          {/* Owner and contact, same design */}
+          <div className="grid grid-cols-2 gap-2 mb-4">
+            <div className="bg-gray-50 p-3 rounded-lg text-center">
+              <span className="block text-sm font-medium text-gray-600">Owner</span>
+              <span className="block text-base font-semibold text-gray-800">{pet.ownerName ?? "Not informed"}</span>
+            </div>
+            <div className="bg-gray-50 p-3 rounded-lg text-center">
+              <span className="block text-sm font-medium text-gray-600">Phone</span>
+              <span className="block text-base font-semibold text-gray-800">{pet.contactPhone ?? "Not informed"}</span>
             </div>
           </div>
           <div className="mb-6">

@@ -14,7 +14,7 @@ export default function ProfileStats({
   handleViewChange
 }: ProfileStatsProps) {
   return (
-    <div className="grid grid-cols-4 gap-2 bg-neutral-50 p-3 rounded-lg mb-4">
+    <div className="grid grid-cols-3 gap-2 bg-neutral-50 p-3 rounded-lg mb-4">
       <div 
         className={`p-2 rounded-lg cursor-pointer transition text-center ${activeView === 'followers' ? 'bg-white shadow-sm' : 'hover:bg-white hover:shadow-sm'}`}
         onClick={() => handleViewChange('followers')}
@@ -33,13 +33,9 @@ export default function ProfileStats({
         </p>
         <p className="text-xs text-neutral-600">Seguindo</p>
       </div>
-      <div className="p-2 rounded-lg text-center hover:bg-white hover:shadow-sm transition">
-        <p className="text-lg font-bold text-primary">
-          {pets?.length || 0}
-        </p>
-        <p className="text-xs text-neutral-600">Pets</p>
-      </div>
-      <div className="p-2 rounded-lg text-center hover:bg-white hover:shadow-sm transition">
+      
+      <div className="p-2 rounded-lg text-center hover:bg-white hover:shadow-sm transition" 
+      onClick={() => handleViewChange('posts')}>
         <p className="text-lg font-bold text-primary">
           {savedPosts?.length || 0}
         </p>

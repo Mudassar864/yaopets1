@@ -7,7 +7,7 @@ import { formatTimeAgo, generateInitials, truncateText } from "@/lib/utils";
 import { Search } from "lucide-react";
 import NativeBottomNavigation from "@/components/mobile/NativeBottomNavigation";
 import { useAuth } from "@/context/AuthContext";
-import { chatStorage, userManagement } from "@/utils/localStorageManager";
+import api from "@/lib/api";
 
 export default function ChatsListPage() {
   const [, setLocation] = useLocation();
@@ -17,80 +17,58 @@ export default function ChatsListPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
 
-  // Load conversations from localStorage
+  // Load conversations from backend API
   useEffect(() => {
     if (!user?.id) {
       setConversations([]);
       setIsLoading(false);
       return;
     }
-    
+
     setIsLoading(true);
-    
-    try {
-      // Get user's conversations
-      const userChats = chatStorage.getUserChats(user.id);
-      
-      // Enrich with participant and last message data
-      const enrichedChats = userChats.map(chat => {
-        // Determine who is the other participant
-        const otherParticipantId = chat.participant1Id === user.id 
-          ? chat.participant2Id 
-          : chat.participant1Id;
-        
-        // Get participant data
-        const participant = userManagement.getUserById(otherParticipantId);
-        
-        // Get messages for this conversation
-        const chatMessages = chatStorage.getMessages(chat.id);
-        
-        // Get last message
-        const lastMessage = chatMessages.length > 0 
-          ? chatMessages.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0]
-          : null;
-        
-        // Count unread messages
-        const unreadCount = chatMessages.filter(msg => 
-          msg.recipientId === user.id && !msg.read
-        ).length;
-        
-        return {
-          ...chat,
-          participant,
-          lastMessage,
-          unreadCount
-        };
-      });
-      
-      setConversations(enrichedChats);
-      setIsError(false);
-    } catch (error) {
-      console.error("Error loading conversations:", error);
-      setIsError(true);
-    } finally {
-      setIsLoading(false);
+
+    async function loadConversations() {
+      try {
+        // Fetch all chats for the current user
+        const chatsRes = await api.chat.getChats();
+        const chats = Array.isArray(chatsRes.data) ? chatsRes.data : (chatsRes.data?.chats || []);
+
+        // Enrich each chat with participant info, last message, unread count
+        // If your backend already sends participant and lastMessage, use them directly!
+        setConversations(chats);
+        setIsError(false);
+      } catch (error) {
+        console.error("Error loading conversations:", error);
+        setIsError(true);
+        setConversations([]);
+      } finally {
+        setIsLoading(false);
+      }
     }
+
+    loadConversations();
   }, [user?.id]);
 
   // Filter by search query
   const filteredConversations = conversations.filter((conversation) => {
     const participant = conversation.participant;
     if (!participant) return false;
-    return participant.name.toLowerCase().includes(searchQuery.toLowerCase());
+    return (
+      participant.name &&
+      participant.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
   });
 
-  const handleChatClick = (conversationId: number) => {
-    setLocation(`/chat/${conversationId}`);
+  // This assumes your ChatPage expects a userId, not a chatId in the route
+  const handleChatClick = (participantId: string) => {
+    setLocation(`/chat/${participantId}`);
   };
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
       {/* Header */}
-      <Header 
-        title="Messages"
-        showFilters={false}
-      />
-      
+      <Header title="Messages" showFilters={false} />
+
       {/* Search Box */}
       <div className="px-4 py-3 bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="relative">
@@ -106,7 +84,7 @@ export default function ChatsListPage() {
           />
         </div>
       </div>
-      
+
       {/* Main Content - Conversations List */}
       <main className="flex-grow pb-20">
         <div className="divide-y divide-gray-100">
@@ -135,39 +113,50 @@ export default function ChatsListPage() {
             // Conversations
             filteredConversations.map((conversation) => {
               const { participant, lastMessage, unreadCount } = conversation;
+              if (!participant) return null;
               return (
-                <div 
+                <div
                   key={conversation.id}
                   className="px-4 py-3.5 flex items-start hover:bg-gray-50 active:bg-gray-100 cursor-pointer transition-colors"
-                  onClick={() => handleChatClick(conversation.id)}
+                  onClick={() => handleChatClick(participant._id)}
                 >
                   <Avatar className="h-12 w-12 mr-3 flex-shrink-0">
                     {participant?.profileImage ? (
-                      <AvatarImage 
+                      <AvatarImage
                         src={participant.profileImage}
-                        alt={participant.name} 
-                        className="h-full w-full object-cover" 
+                        alt={participant.name}
+                        className="h-full w-full object-cover"
                       />
                     ) : (
                       <AvatarFallback className="bg-blue-100 text-blue-600 font-medium">
-                        {generateInitials(participant?.name || 'User')}
+                        {generateInitials(participant?.name || "User")}
                       </AvatarFallback>
                     )}
                   </Avatar>
-                  
+
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-center mb-1">
-                      <h3 className="font-medium text-gray-900 truncate">{participant?.name || 'User'}</h3>
+                      <h3 className="font-medium text-gray-900 truncate">
+                        {participant?.name || "User"}
+                      </h3>
                       {lastMessage && (
                         <span className="text-xs text-gray-500 whitespace-nowrap ml-2">
                           {formatTimeAgo(lastMessage.createdAt)}
                         </span>
                       )}
                     </div>
-                    
+
                     <div className="flex items-center">
-                      <p className={`text-sm ${unreadCount > 0 ? 'text-gray-900 font-medium' : 'text-gray-600'} truncate`}>
-                        {lastMessage ? truncateText(lastMessage.content, 65) : "No messages yet"}
+                      <p
+                        className={`text-sm ${
+                          unreadCount > 0
+                            ? "text-gray-900 font-medium"
+                            : "text-gray-600"
+                        } truncate`}
+                      >
+                        {lastMessage
+                          ? truncateText(lastMessage.content, 65)
+                          : "No messages yet"}
                       </p>
                       {unreadCount > 0 && (
                         <span className="ml-2 flex-shrink-0 bg-blue-600 text-white text-xs font-medium rounded-full h-5 min-w-5 flex items-center justify-center px-1.5">
