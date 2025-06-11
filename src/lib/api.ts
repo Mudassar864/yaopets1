@@ -2,7 +2,7 @@ import axios from "axios";
 
 // Create axios instance with base URL
 const api = axios.create({
-  baseURL: "http://yaopets.lat/api",
+  baseURL: "https://yaopets.lat/api",
   headers: {
     "Content-Type": "application/json",
   },
